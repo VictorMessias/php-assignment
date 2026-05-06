@@ -250,6 +250,71 @@ function initCoupon() {
     }
 }
 
+function setFieldError(fieldId, errId, message) {
+    var field = document.getElementById(fieldId);
+    var err = document.getElementById(errId);
+    if (!field || !err) return;
+    if (message) {
+        field.classList.add('invalid');
+        err.textContent = message;
+    } else {
+        field.classList.remove('invalid');
+        err.textContent = '';
+    }
+}
+
+function validateForm() {
+    var valid = true;
+
+    var fields = [
+        { id: 'first-name', err: 'err-first-name', label: 'First name' },
+        { id: 'last-name',  err: 'err-last-name',  label: 'Last name' },
+        { id: 'email',      err: 'err-email',       label: 'Email' },
+        { id: 'street',     err: 'err-street',      label: 'Street' },
+        { id: 'city',       err: 'err-city',        label: 'City' },
+        { id: 'state',      err: 'err-state',       label: 'State' },
+        { id: 'zip',        err: 'err-zip',         label: 'ZIP' }
+    ];
+
+    fields.forEach(function(f) {
+        var el = document.getElementById(f.id);
+        if (!el) return;
+        var val = el.value.trim();
+        if (!val) {
+            setFieldError(f.id, f.err, f.label + ' is required.');
+            valid = false;
+        } else {
+            setFieldError(f.id, f.err, '');
+        }
+    });
+
+    var emailEl = document.getElementById('email');
+    if (emailEl && emailEl.value.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailEl.value.trim())) {
+        setFieldError('email', 'err-email', 'Please enter a valid email.');
+        valid = false;
+    }
+
+    var stateEl = document.getElementById('state');
+    if (stateEl && stateEl.value.trim() && !/^[A-Za-z]{2}$/.test(stateEl.value.trim())) {
+        setFieldError('state', 'err-state', 'Use 2-letter state code (e.g. NY).');
+        valid = false;
+    }
+
+    return valid;
+}
+
+function getFormData() {
+    return {
+        firstName: (document.getElementById('first-name') || {}).value || '',
+        lastName:  (document.getElementById('last-name')  || {}).value || '',
+        email:     (document.getElementById('email')      || {}).value || '',
+        street:    (document.getElementById('street')     || {}).value || '',
+        city:      (document.getElementById('city')       || {}).value || '',
+        state:     (document.getElementById('state')      || {}).value || '',
+        zip:       (document.getElementById('zip')        || {}).value || ''
+    };
+}
+
 function init() {
     var injections = getProductsByType('injection');
     if (injections.length > 0) {
