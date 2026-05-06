@@ -38,6 +38,15 @@ $products_data = json_decode($products_json, true);
         <section class="pricing-summary" id="pricing-summary">
         </section>
 
+        <section class="coupon-section">
+            <label for="coupon-input">Have a coupon code?</label>
+            <div class="coupon-row">
+                <input type="text" id="coupon-input" placeholder="Enter code" autocomplete="off">
+                <button type="button" id="coupon-apply">Apply</button>
+            </div>
+            <div id="coupon-message" class="coupon-message"></div>
+        </section>
+
     </main>
 </div>
 

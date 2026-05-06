@@ -4,7 +4,8 @@ var isStatic = urlParams.get('static') === '1';
 var state = {
     medicationType: 'injection',
     selectedProductId: null,
-    selectedPlanId: null
+    selectedPlanId: null,
+    coupon: null
 };
 
 var products = productsConfig.products;
@@ -58,6 +59,7 @@ function renderProducts() {
             state.selectedProductId = product.productId;
             var prod = getProduct(state.selectedProductId);
             state.selectedPlanId = prod.plans[0].planId;
+            clearCoupon();
             render();
         });
 
@@ -92,6 +94,7 @@ function renderPlans() {
 
         item.addEventListener('click', function() {
             state.selectedPlanId = plan.planId;
+            clearCoupon();
             render();
         });
 
@@ -112,15 +115,31 @@ function renderSummary() {
     if (!plan) return;
 
     var displayPrice = getDisplayPrice(plan);
+    var finalPrice = displayPrice;
+
+    if (state.coupon) {
+        if (state.coupon.amountOff) {
+            finalPrice = Math.max(0, displayPrice - state.coupon.amountOff);
+        } else if (state.coupon.percentOff) {
+            finalPrice = Math.max(0, displayPrice - (displayPrice * state.coupon.percentOff / 100));
+        }
+        finalPrice = Math.round(finalPrice * 100) / 100;
+    }
+
     var savings = plan.totalPrice - displayPrice;
 
     var rows = [
         { label: 'Product', value: product.productTitle },
         { label: 'Plan', value: plan.label },
         { label: 'Regular Price', value: '$' + plan.totalPrice },
-        { label: 'You save', value: '-$' + savings, isSavings: true },
-        { label: 'Today\'s Price', value: '$' + displayPrice, isTotal: true }
+        { label: 'You save', value: '-$' + savings, isSavings: true }
     ];
+
+    if (state.coupon) {
+        rows.push({ label: 'Coupon (' + state.coupon.couponId + ')', value: '-' + state.coupon.label, isSavings: true });
+    }
+
+    rows.push({ label: 'Today\'s Price', value: '$' + finalPrice, isTotal: true });
 
     rows.forEach(function(row) {
         var div = document.createElement('div');
@@ -156,6 +175,81 @@ function initMedTabs() {
     });
 }
 
+function clearCoupon() {
+    state.coupon = null;
+    var input = document.getElementById('coupon-input');
+    var msg = document.getElementById('coupon-message');
+    if (input) input.value = '';
+    if (msg) { msg.textContent = ''; msg.className = 'coupon-message'; }
+}
+
+function applyCoupon() {
+    var input = document.getElementById('coupon-input');
+    var msg = document.getElementById('coupon-message');
+    var code = input ? input.value.trim() : '';
+
+    if (!code) {
+        msg.textContent = 'Please enter a coupon code.';
+        msg.className = 'coupon-message error';
+        return;
+    }
+
+    var product = getProduct(state.selectedProductId);
+    var plan = product ? getPlan(product, state.selectedPlanId) : null;
+    if (!plan) return;
+
+    var btn = document.getElementById('coupon-apply');
+    btn.disabled = true;
+    btn.textContent = 'Checking...';
+    msg.textContent = '';
+    msg.className = 'coupon-message';
+
+    fetch('ajax/validate-coupon.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: code, priceId: plan.priceId })
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        btn.disabled = false;
+        btn.textContent = 'Apply';
+
+        if (data.error) {
+            msg.textContent = data.error;
+            msg.className = 'coupon-message error';
+            return;
+        }
+
+        if (!data.valid) {
+            state.coupon = null;
+            msg.textContent = data.message;
+            msg.className = 'coupon-message error';
+        } else {
+            state.coupon = data;
+            msg.textContent = data.message;
+            msg.className = 'coupon-message success';
+            renderSummary();
+        }
+    })
+    .catch(function() {
+        btn.disabled = false;
+        btn.textContent = 'Apply';
+        msg.textContent = 'Network error, please try again.';
+        msg.className = 'coupon-message error';
+    });
+}
+
+function initCoupon() {
+    var btn = document.getElementById('coupon-apply');
+    var input = document.getElementById('coupon-input');
+    if (btn) btn.addEventListener('click', applyCoupon);
+    if (input) {
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') applyCoupon();
+        });
+    }
+}
+
 function init() {
     var injections = getProductsByType('injection');
     if (injections.length > 0) {
@@ -169,6 +263,7 @@ function init() {
     }
 
     initMedTabs();
+    initCoupon();
     render();
 }
 
