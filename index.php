@@ -25,6 +25,10 @@ $products_data = json_decode($products_json, true);
             <button class="med-tab" data-type="tablets">Tablets</button>
         </section>
 
+        <div id="static-banner" style="display:none" class="static-banner">
+            Special pricing applied to your session.
+        </div>
+
         <section class="products-grid" id="products-grid">
         </section>
 

@@ -1,3 +1,6 @@
+var urlParams = new URLSearchParams(window.location.search);
+var isStatic = urlParams.get('static') === '1';
+
 var state = {
     medicationType: 'injection',
     selectedProductId: null,
@@ -24,6 +27,18 @@ function getPlan(product, planId) {
     });
 }
 
+function getDisplayPrice(plan) {
+    if (isStatic && plan.staticPrice !== null) {
+        return plan.staticPrice;
+    }
+    return plan.discountedPrice;
+}
+
+function getActiveCoupon(plan) {
+    if (isStatic) return plan.static_coupon_id || plan.coupon_id;
+    return plan.coupon_id;
+}
+
 function renderProducts() {
     var grid = document.getElementById('products-grid');
     grid.innerHTML = '';
@@ -36,7 +51,8 @@ function renderProducts() {
         card.dataset.productId = product.productId;
 
         card.innerHTML = '<h3>' + product.productTitle + '</h3>' +
-            '<span class="product-subtitle">' + product.medication_type + '</span>';
+            '<span class="product-subtitle">' + product.medication_type + '</span>' +
+            '<span class="card-price">from $' + getDisplayPrice(product.plans[0]) + '</span>';
 
         card.addEventListener('click', function() {
             state.selectedProductId = product.productId;
@@ -71,7 +87,7 @@ function renderPlans() {
         item.innerHTML = '<span class="plan-label">' + plan.label + '</span>' +
             '<div class="plan-price">' +
                 '<div class="price-original">$' + plan.totalPrice + '</div>' +
-                '<div class="price-current">$' + plan.discountedPrice + '</div>' +
+                '<div class="price-current">$' + getDisplayPrice(plan) + '</div>' +
             '</div>';
 
         item.addEventListener('click', function() {
@@ -95,17 +111,22 @@ function renderSummary() {
     var plan = getPlan(product, state.selectedPlanId);
     if (!plan) return;
 
+    var displayPrice = getDisplayPrice(plan);
+    var savings = plan.totalPrice - displayPrice;
+
     var rows = [
         { label: 'Product', value: product.productTitle },
         { label: 'Plan', value: plan.label },
         { label: 'Regular Price', value: '$' + plan.totalPrice },
-        { label: 'Today\'s Price', value: '$' + plan.discountedPrice, isTotal: true }
+        { label: 'You save', value: '-$' + savings, isSavings: true },
+        { label: 'Today\'s Price', value: '$' + displayPrice, isTotal: true }
     ];
 
     rows.forEach(function(row) {
         var div = document.createElement('div');
         div.className = 'summary-row' + (row.isTotal ? ' total' : '');
-        div.innerHTML = '<span class="label">' + row.label + '</span><span class="value">' + row.value + '</span>';
+        var valueClass = row.isSavings ? ' class="value savings"' : ' class="value"';
+        div.innerHTML = '<span class="label">' + row.label + '</span><span' + valueClass + '>' + row.value + '</span>';
         container.appendChild(div);
     });
 }
@@ -140,6 +161,11 @@ function init() {
     if (injections.length > 0) {
         state.selectedProductId = injections[0].productId;
         state.selectedPlanId = injections[0].plans[0].planId;
+    }
+
+    if (isStatic) {
+        var banner = document.getElementById('static-banner');
+        if (banner) banner.style.display = 'block';
     }
 
     initMedTabs();
