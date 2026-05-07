@@ -7,8 +7,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-$body = json_decode(file_get_contents('php://input'), true);
-$code = isset($body['code']) ? trim($body['code']) : '';
+require_once __DIR__ . '/../lib/env.php';
+load_env(__DIR__ . '/../.env');
+
+$body    = json_decode(file_get_contents('php://input'), true);
+$code    = isset($body['code'])    ? trim($body['code'])    : '';
 $priceId = isset($body['priceId']) ? trim($body['priceId']) : '';
 
 if ($code === '' || $priceId === '') {
@@ -17,8 +20,8 @@ if ($code === '' || $priceId === '') {
     exit;
 }
 
-$env = parse_ini_file(__DIR__ . '/../.env');
-if (!$env || empty($env['STRIPE_SECRET_KEY'])) {
+$secret = getenv('STRIPE_SECRET_KEY');
+if (!$secret) {
     http_response_code(500);
     echo json_encode(['error' => 'Stripe is not configured']);
     exit;
@@ -26,7 +29,7 @@ if (!$env || empty($env['STRIPE_SECRET_KEY'])) {
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-\Stripe\Stripe::setApiKey($env['STRIPE_SECRET_KEY']);
+\Stripe\Stripe::setApiKey($secret);
 
 try {
     $coupon = \Stripe\Coupon::retrieve($code);

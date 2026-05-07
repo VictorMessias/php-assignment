@@ -1,24 +1,24 @@
 {
     "products": [
         {
-            "productId": "p_1",
+            "productId": "prod_UTYQDuFIP92kMd",
             "productTitle": "Tirzepatide Injection",
             "productSlug": "tirzepatide-injection",
             "medication_type": "injection",
             "plans": [
                 {
-                    "planId": "plan_tirz_inj_m2m",
+                    "planId": "price_1TUbJyLVmFbktQAeziFByhIS",
                     "label": "Month-to-Month",
-                    "priceId": "price_test_tirz_inj_m2m",
+                    "priceId": "price_1TUbJyLVmFbktQAeziFByhIS",
                     "totalPrice": 399,
                     "discountedPrice": 197,
                     "staticPrice": 279,
                     "coupon_id": "cpn_test_tirz_default"
                 },
                 {
-                    "planId": "plan_tirz_inj_3m",
+                    "planId": "price_1TUbJyLVmFbktQAeNC6hNCIm",
                     "label": "3-Month Bundle",
-                    "priceId": "price_test_tirz_inj_3m",
+                    "priceId": "price_1TUbJyLVmFbktQAeNC6hNCIm",
                     "totalPrice": 1197,
                     "discountedPrice": 497,
                     "staticPrice": 749,
@@ -27,24 +27,24 @@
             ]
         },
         {
-            "productId": "p_2",
+            "productId": "prod_UTYXa7N5h9fJE9",
             "productTitle": "Semaglutide Injection",
             "productSlug": "semaglutide-injection",
             "medication_type": "injection",
             "plans": [
                 {
-                    "planId": "plan_sema_inj_m2m",
+                    "planId": "price_1TUbQSLVmFbktQAeqk57clt7",
                     "label": "Month-to-Month",
-                    "priceId": "price_test_sema_inj_m2m",
+                    "priceId": "price_1TUbQSLVmFbktQAeqk57clt7",
                     "totalPrice": 299,
                     "discountedPrice": 167,
                     "staticPrice": 229,
                     "coupon_id": "cpn_test_sema_default"
                 },
                 {
-                    "planId": "plan_sema_inj_3m",
+                    "planId": "price_1TUbQSLVmFbktQAeBC13Ucvt",
                     "label": "3-Month Bundle",
-                    "priceId": "price_test_sema_inj_3m",
+                    "priceId": "price_1TUbQSLVmFbktQAeBC13Ucvt",
                     "totalPrice": 897,
                     "discountedPrice": 397,
                     "staticPrice": 599,
@@ -53,15 +53,15 @@
             ]
         },
         {
-            "productId": "p_3",
+            "productId": "prod_UTYaAx1fvdgAe0",
             "productTitle": "Tirzepatide Tablets",
             "productSlug": "tirzepatide-tablets",
             "medication_type": "tablets",
             "plans": [
                 {
-                    "planId": "plan_tirz_tab_m2m",
+                    "planId": "price_1TUbTMLVmFbktQAeHyXGQ5Xo",
                     "label": "Month-to-Month",
-                    "priceId": "price_test_tirz_tab_m2m",
+                    "priceId": "price_1TUbTMLVmFbktQAeHyXGQ5Xo",
                     "totalPrice": 399,
                     "discountedPrice": 297,
                     "staticPrice": null,
@@ -70,15 +70,15 @@
             ]
         },
         {
-            "productId": "p_4",
+            "productId": "prod_UTYbuUBeGyLJgf",
             "productTitle": "Semaglutide Tablets",
             "productSlug": "semaglutide-tablets",
             "medication_type": "tablets",
             "plans": [
                 {
-                    "planId": "plan_sema_tab_m2m",
+                    "planId": "price_1TUbU4LVmFbktQAeoAo80LH4",
                     "label": "Month-to-Month",
-                    "priceId": "price_test_sema_tab_m2m",
+                    "priceId": "price_1TUbU4LVmFbktQAeoAo80LH4",
                     "totalPrice": 299,
                     "discountedPrice": 267,
                     "staticPrice": null,

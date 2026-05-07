@@ -109,6 +109,12 @@ $hasUrlData = $prefill['firstName'] || $prefill['lastName'] || $prefill['email']
             </form>
         </section>
 
+        <div id="checkout-error" class="checkout-error" style="display:none"></div>
+
+        <button type="button" id="checkout-btn" class="checkout-btn">
+            Continue to Payment
+        </button>
+
     </main>
 </div>
 

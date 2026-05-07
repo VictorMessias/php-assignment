@@ -53,7 +53,7 @@ function renderProducts() {
 
         card.innerHTML = '<h3>' + product.productTitle + '</h3>' +
             '<span class="product-subtitle">' + product.medication_type + '</span>' +
-            '<span class="card-price">from $' + getDisplayPrice(product.plans[0]) + '</span>';
+            '<span class="card-price">from $' + product.plans[0].totalPrice + '</span>';
 
         card.addEventListener('click', function() {
             state.selectedProductId = product.productId;
@@ -88,8 +88,7 @@ function renderPlans() {
 
         item.innerHTML = '<span class="plan-label">' + plan.label + '</span>' +
             '<div class="plan-price">' +
-                '<div class="price-original">$' + plan.totalPrice + '</div>' +
-                '<div class="price-current">$' + getDisplayPrice(plan) + '</div>' +
+                '<div class="price-current">$' + plan.totalPrice + '</div>' +
             '</div>';
 
         item.addEventListener('click', function() {
@@ -114,29 +113,27 @@ function renderSummary() {
     var plan = getPlan(product, state.selectedPlanId);
     if (!plan) return;
 
-    var displayPrice = getDisplayPrice(plan);
-    var finalPrice = displayPrice;
+    var basePrice = plan.totalPrice;
+    var finalPrice = basePrice;
 
     if (state.coupon) {
         if (state.coupon.amountOff) {
-            finalPrice = Math.max(0, displayPrice - state.coupon.amountOff);
+            finalPrice = Math.max(0, basePrice - state.coupon.amountOff);
         } else if (state.coupon.percentOff) {
-            finalPrice = Math.max(0, displayPrice - (displayPrice * state.coupon.percentOff / 100));
+            finalPrice = Math.max(0, basePrice - (basePrice * state.coupon.percentOff / 100));
         }
         finalPrice = Math.round(finalPrice * 100) / 100;
     }
 
-    var savings = plan.totalPrice - displayPrice;
-
     var rows = [
         { label: 'Product', value: product.productTitle },
         { label: 'Plan', value: plan.label },
-        { label: 'Regular Price', value: '$' + plan.totalPrice },
-        { label: 'You save', value: '-$' + savings, isSavings: true }
+        { label: 'Price', value: '$' + basePrice }
     ];
 
     if (state.coupon) {
-        rows.push({ label: 'Coupon (' + state.coupon.couponId + ')', value: '-' + state.coupon.label, isSavings: true });
+        var savings = basePrice - finalPrice;
+        rows.push({ label: 'Coupon (' + state.coupon.couponId + ')', value: '-$' + savings.toFixed(2), isSavings: true });
     }
 
     rows.push({ label: 'Today\'s Price', value: '$' + finalPrice, isTotal: true });
@@ -315,6 +312,81 @@ function getFormData() {
     };
 }
 
+function setCheckoutError(msg) {
+    var el = document.getElementById('checkout-error');
+    if (!el) return;
+    if (msg) {
+        el.textContent = msg;
+        el.style.display = 'block';
+    } else {
+        el.textContent = '';
+        el.style.display = 'none';
+    }
+}
+
+function submitCheckout() {
+    setCheckoutError('');
+
+    if (!validateForm()) {
+        document.getElementById('user-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+    }
+
+    var product = getProduct(state.selectedProductId);
+    var plan    = product ? getPlan(product, state.selectedPlanId) : null;
+    if (!plan) {
+        setCheckoutError('Please select a product and plan before continuing.');
+        return;
+    }
+
+    var form      = getFormData();
+    var couponId  = state.coupon ? state.coupon.couponId : getActiveCoupon(plan);
+    var btn       = document.getElementById('checkout-btn');
+
+    btn.disabled    = true;
+    btn.textContent = 'Loading...';
+
+    var payload = {
+        priceId:   plan.priceId,
+        couponId:  couponId || '',
+        email:     form.email,
+        firstName: form.firstName,
+        lastName:  form.lastName,
+        street:    form.street,
+        city:      form.city,
+        state:     form.state,
+        zip:       form.zip
+    };
+
+    fetch('ajax/create-checkout-session.php', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(payload)
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        btn.disabled    = false;
+        btn.textContent = 'Continue to Payment';
+
+        if (data.error) {
+            setCheckoutError(data.error);
+            return;
+        }
+
+        window.location.href = data.url;
+    })
+    .catch(function() {
+        btn.disabled    = false;
+        btn.textContent = 'Continue to Payment';
+        setCheckoutError('Network error. Please check your connection and try again.');
+    });
+}
+
+function initCheckoutBtn() {
+    var btn = document.getElementById('checkout-btn');
+    if (btn) btn.addEventListener('click', submitCheckout);
+}
+
 function init() {
     var injections = getProductsByType('injection');
     if (injections.length > 0) {
@@ -329,6 +401,7 @@ function init() {
 
     initMedTabs();
     initCoupon();
+    initCheckoutBtn();
     render();
 }
 
